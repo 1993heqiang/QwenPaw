@@ -34,11 +34,14 @@ class GeminiProvider(Provider):
 
     def _client(self, timeout: float = 10) -> Any:
         headers = self._build_default_headers() or None
+        client_args = self._build_http_client_kwargs()
         return genai.Client(
             api_key=self.api_key,
             http_options=genai_types.HttpOptions(
                 timeout=int(timeout * 1000),
                 headers=headers,
+                client_args=client_args,
+                async_client_args=client_args,
             ),
         )
 

@@ -80,6 +80,7 @@ class AnthropicProvider(Provider):
         if self._strip_http_client is None:
             self._strip_http_client = httpx.AsyncClient(
                 transport=_StripApiKeyTransport(),
+                **self._build_http_client_kwargs(),
             )
         return self._strip_http_client
 

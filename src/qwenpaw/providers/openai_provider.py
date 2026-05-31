@@ -11,6 +11,7 @@ import time
 from typing import TYPE_CHECKING, Any, List
 
 from agentscope.model import ChatModelBase
+from httpx import AsyncClient
 from openai import APIError
 
 from qwenpaw.providers.provider import ModelInfo, Provider
@@ -55,6 +56,11 @@ class OpenAIProvider(Provider):
             "api_key": self.api_key,
             "timeout": timeout,
         }
+
+        http_client_kwargs = self._build_http_client_kwargs()
+        if http_client_kwargs:
+            kwargs["http_client"] = AsyncClient(**http_client_kwargs)
+
         headers = self._build_default_headers()
         if headers:
             kwargs["default_headers"] = headers
@@ -154,8 +160,10 @@ class OpenAIProvider(Provider):
 
         client_kwargs: dict = {"base_url": self.base_url}
 
-        # Start with user-defined custom headers, then layer platform-specific
-        # headers on top so required service headers are always present.
+        http_client_kwargs = self._build_http_client_kwargs()
+        if http_client_kwargs:
+            client_kwargs["http_client"] = AsyncClient(**http_client_kwargs)
+
         merged_headers = self._build_default_headers()
 
         if self.base_url in DASHSCOPE_BASE_URLS:

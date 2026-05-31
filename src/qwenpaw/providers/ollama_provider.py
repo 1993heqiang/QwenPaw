@@ -5,6 +5,7 @@ import os
 from typing import Any
 
 from agentscope.model import ChatModelBase
+from httpx import AsyncClient
 from openai import AsyncOpenAI
 
 from qwenpaw.providers.openai_provider import OpenAIProvider
@@ -47,6 +48,9 @@ class OllamaProvider(OpenAIProvider):
             "api_key": self.api_key,
             "timeout": timeout,
         }
+        http_client_kwargs = self._build_http_client_kwargs()
+        if http_client_kwargs:
+            kwargs["http_client"] = AsyncClient(**http_client_kwargs)
         headers = self._build_default_headers()
         if headers:
             kwargs["default_headers"] = headers

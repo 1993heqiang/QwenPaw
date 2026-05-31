@@ -7,6 +7,7 @@ from decimal import Decimal, InvalidOperation
 from typing import Any, List, Optional
 
 from agentscope.model import ChatModelBase
+from httpx import AsyncClient
 from openai import APIError, AsyncOpenAI
 
 from qwenpaw.providers.provider import (
@@ -38,12 +39,14 @@ class OpenRouterProvider(Provider):
         return {**self._DEFAULT_HEADERS, **self.custom_headers}
 
     def _client(self, timeout: float = 30) -> AsyncOpenAI:
-        return AsyncOpenAI(
-            base_url=self.base_url,
-            api_key=self.api_key,
-            timeout=timeout,
-            default_headers=self._build_default_headers(),
-        )
+        kwargs: dict = {
+            "base_url": self.base_url,
+            "api_key": self.api_key,
+            "timeout": timeout,
+            "default_headers": self._build_default_headers(),
+        }
+        kwargs["http_client"] = AsyncClient(**self._build_http_client_kwargs())
+        return AsyncOpenAI(**kwargs)
 
     @staticmethod
     def _extract_provider(model_id: str) -> str:

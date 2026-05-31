@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import os
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Type
 from pydantic import BaseModel, Field
@@ -170,6 +171,17 @@ class ProviderInfo(BaseModel):
 
 class Provider(ProviderInfo, ABC):
     """Represents a provider instance with its configuration."""
+
+    def _build_http_client_kwargs(self) -> dict:
+        http_client_kwargs: dict = {
+            "trust_env": os.environ.get("TRUST_ENV", "true").lower() == "true",
+        }
+
+        ssl_verify = os.environ.get("SSL_VERIFY", "true").lower()
+        if ssl_verify == "false":
+            http_client_kwargs["verify"] = False
+
+        return http_client_kwargs
 
     @abstractmethod
     async def check_connection(self, timeout: float = 5) -> tuple[bool, str]:
